@@ -55,10 +55,14 @@ class SwaggerParser(object):
                 if _response_content_detail is None:
                     _response_content_detail = _detail['responses'].get(str(_status_code))
                 _response_content_detail = _response_content_detail['content']['application/json']['schema']
-                _response_content = dict()
                 if _response_content_detail.get('type') == 'array':
+                    _response_content = list()
+                    _response_item = dict()
                     for _key, _value in _response_content_detail['items']['properties'].items():
-                        _response_content[_key] = _value.get('type') + ' # %s' % _value.get('description')
+                        _response_item[_key] = _value.get('type') + ' # %s' % _value.get('description')
+                    _response_content.append(_response_item)
+                else:
+                    _response_content = dict()
                 _api = {
                     'summary': _detail.get('summary'),
                     'template': [
@@ -99,7 +103,13 @@ class SwaggerParser(object):
                     _test_case_content,
                     '    def test_%s(self):' % _test_data_file_name.split('.yaml')[0],
                     '        ce = CaseExecutor()',
-                    '        ce = CaseExecutor()',
+                    '        ce.get_test_case_requests(',
+                    '            test_suite=\'%s\',' % _suite,
+                    '            test_case=\'%s\'' % _test_data_file_name,
+                    '        )',
+                    '        for test_request_data in ce.test_requests_data:',
+                    '            ce.exec_test_case(test_request_data)',
+                    '',
                 ])
             _test_case_suite = os.path.join(self.test_case_dir, 'test_' + _suite + '.py')
             logging.info(u'生成测试用例套件 %s' % _test_case_suite)
@@ -107,9 +117,9 @@ class SwaggerParser(object):
                 '#!/usr/local/env python3',
                 '# -*- coding: utf-8 -*-',
                 '',
-                'from utils.SwaggerParser import SwaggerParser',
+                # 'from utils.SwaggerParser import SwaggerParser',
                 'from utils.CaseExecutor import CaseExecutor',
-                'import logging',
+                # 'import logging',
                 '',
                 '',
                 'class Test%s(object):' % _suite.capitalize(),
