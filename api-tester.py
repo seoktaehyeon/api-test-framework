@@ -12,7 +12,7 @@ if __name__ == '__main__':
         print(u'%s option' % sys.argv[0])
         print(u'option: init | run')
         exit(1)
-    if sys.argv[1] == 'prepare':
+    if sys.argv[1] == 'init':
         sp = SwaggerParser()
         for _doc in sp.api_doc_list:
             sp.parse_doc(doc_file_name=_doc)
