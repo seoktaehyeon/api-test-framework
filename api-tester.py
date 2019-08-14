@@ -1,4 +1,4 @@
-#!/usr/local/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import pytest
@@ -8,6 +8,10 @@ import sys
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        print(u'%s option' % sys.argv[0])
+        print(u'option: init | run')
+        exit(1)
     if sys.argv[1] == 'prepare':
         sp = SwaggerParser()
         for _doc in sp.api_doc_list:
