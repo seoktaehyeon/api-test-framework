@@ -1,3 +1,4 @@
+# API Test Framework
 ```bash
 .
 ├── README.md
@@ -13,3 +14,13 @@
     ├── SwaggerParser.py
     └── __init__.py
 ```
+## Setup Test Bed
+#### git clone
+#### docker
+#### docker-compose YAML
+
+## Init To Create Test Case Template
+
+## Run Test Case
+
+## Check HTML Report

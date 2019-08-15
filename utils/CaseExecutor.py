@@ -5,6 +5,7 @@ import os
 import requests
 import yaml
 import logging
+import pytest
 
 
 class CaseExecutor(object):
@@ -23,21 +24,28 @@ class CaseExecutor(object):
         logging.info(u'测试 %s 中的 %s' % (test_suite, test_case))
         _requests_data = list()
         _file_path = os.path.join(self.test_data_dir, test_suite, test_case)
+        if os.path.exists(_file_path) is False:
+            pytest.skip(u'缺少测试数据文件')
+
         logging.info(u'获取 %s 中的数据' % _file_path)
         with open(_file_path, 'r') as f:
             _content = yaml.full_load(f.read())
-        logging.info(_content)
+        logging.debug(_content)
         for _key in _content.keys():
-            if _key != 'summary' and _key != 'template':
+            if _key not in ['summary', 'method', 'url', 'template']:
                 logging.debug(u'获取 %s 的数据' % _key)
                 _test_request_data = {
-                    'scenario': _key
+                    'scenario': _key,
+                    'method': _content.get('method'),
+                    'url': _content.get('url'),
                 }
-                for _content_items in _content[_key]:
-                    for _content_key, _content_value in _content_items.items():
-                        _test_request_data[_content_key] = _content_value
-                        logging.debug(u'%s: %s' % (_content_key, _content_value))
+                for _content_key, _content_value in _content[_key].items():
+                    _test_request_data[_content_key] = _content_value
+                    logging.debug(u'%s: %s' % (_content_key, _content_value))
                 _requests_data.append(_test_request_data)
+
+        if len(_requests_data) == 0:
+            pytest.skip(u'缺少可用的测试数据')
         self.test_requests_data = _requests_data
         return True
 
@@ -123,14 +131,14 @@ class CaseExecutor(object):
             try:
                 _response = actual.json()
                 if isinstance(_response, list) is True:
-                    expected = expected[0]
+                    # expected = expected[0]
                     _response = _response[0]
                 for _key, _value in expected.items():
                     if _value is None:
                         logging.info('Only check %s in response since %s is None' % (_key, _key))
                         assert _key in _response.keys()
                     else:
-                        logging.info(u'返回值 [预期]%s [实际]%s' % (_value, _response[_key]))
+                        logging.info(u'返回值 %s [预期]%s [实际]%s' % (_key, _value, _response[_key]))
                         assert _value == _response[_key]
             except AttributeError:
                 _response = actual.content.decode('utf-8')

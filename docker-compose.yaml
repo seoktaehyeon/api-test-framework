@@ -1,0 +1,12 @@
+version: '3'
+services:
+  api-test-framework:
+    image: bxwill/api-test-framework:latest
+    container_name: api-test-framework
+    restart: always
+    volumes:
+      - ./atf/test_case:/workspace/test_case
+      - ./atf/test_data:/workspace/test_data
+      - ./atf/data_template:/workspace/data_template
+    environment:
+      TEST_SERVER_URL: http://api-test-framework

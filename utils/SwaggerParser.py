@@ -3,6 +3,9 @@
 import yaml
 import os
 import logging
+from urllib.parse import urlparse, urljoin
+from collections import OrderedDict
+import json
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 class SwaggerParser(object):
     def __init__(self):
         self.api_doc_dir = os.path.join('api_docs')
-        self.test_data_dir = os.path.join('test_data')
+        self.test_data_template_dir = os.path.join('data_template')
         self.test_case_dir = os.path.join('test_case')
         self.api_doc_list = os.listdir(self.api_doc_dir)
 
@@ -27,6 +30,9 @@ class SwaggerParser(object):
             _doc_content = yaml.full_load(f.read())
         logging.info(u'获取文档中 servers 下的 url 作为基础路径')
         _base_url = _doc_content['servers'][0]['url']
+        # 如果环境变量中有自定义的URL，则进行替换
+        if os.getenv('TEST_SERVER_URL'):
+            _base_url = urljoin(os.getenv('TEST_SERVER_URL'), urlparse(_base_url).path)
         logging.info('Base URL: %s' % _base_url)
         logging.info(u'解析文档中的 paths')
         for _path_url, _methods in _doc_content['paths'].items():
@@ -56,29 +62,40 @@ class SwaggerParser(object):
                     _response_content_detail = _detail['responses'].get(str(_status_code))
                 _response_content_detail = _response_content_detail['content']['application/json']['schema']
                 if _response_content_detail.get('type') == 'array':
-                    _response_content = list()
-                    _response_item = dict()
+                    _response_content = dict()
                     for _key, _value in _response_content_detail['items']['properties'].items():
-                        _response_item[_key] = _value.get('type') + ' # %s' % _value.get('description')
-                    _response_content.append(_response_item)
+                        _response_content[_key] = _value.get('type') + ' # %s' % _value.get('description')
                 else:
                     _response_content = dict()
-                _api = {
-                    'summary': _detail.get('summary'),
-                    'template': [
-                        {'method': _method.lower()},
-                        {'url': _base_url + _path_url.lower()},
+                _api = [
+                    {'summary': _detail.get('summary')},
+                    {'method': _method.lower()},
+                    {'url': _base_url + _path_url.lower()},
+                    {'template': [
                         {'path': _parameters['path']},
                         {'header': _parameters['header']},
                         {'query': _parameters['query']},
                         {'body': _parameters['body']},
                         {'expectedStatusCode': _status_code},
                         {'expectedResponse': _response_content},
-                    ]
+                    ]},
+                ]
+                _api = {
+                    'summary': _detail.get('summary'),
+                    'method': _method.lower(),
+                    'url': _base_url + _path_url.lower(),
+                    'template': {
+                        'path': _parameters['path'],
+                        'header': _parameters['header'],
+                        'query': _parameters['query'],
+                        'body': _parameters['body'],
+                        'expectedStatusCode': _status_code,
+                        'expectedResponse': _response_content,
+                    }
                 }
                 logging.info(u'定义测试数据套件路径，suite name %s 作为套件名称' % _suite)
                 _test_data_suite_path = os.path.join(
-                    self.test_data_dir,
+                    self.test_data_template_dir,
                     _suite
                 )
                 logging.info(u'检查套件是否存在，不存在就创建')
@@ -97,7 +114,8 @@ class SwaggerParser(object):
                 )
                 logging.info(u'把解析后的接口内容写入 YAML 格式的测试数据文件 %s' % _test_data_file_path)
                 with open(_test_data_file_path, 'w', encoding='utf-8') as f:
-                    yaml.dump(_api, f, allow_unicode=True)
+                    yaml.safe_dump(_api, f, allow_unicode=True, sort_keys=False)
+
                 logging.info(u'生成测试用例内容')
                 _test_case_content = '\n'.join([
                     _test_case_content,

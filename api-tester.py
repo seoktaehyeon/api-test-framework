@@ -7,11 +7,20 @@ import os
 import sys
 
 
+def help_doc():
+    _help_doc = '\n'.join([
+        'Usage: %s option' % sys.argv[0],
+        'option:',
+        '    init    Init test case and generate data template in data_template dir',
+        '    run     Run test case',
+    ])
+    print(_help_doc)
+    exit(1)
+
+
 if __name__ == '__main__':
     if len(sys.argv) == 1:
-        print(u'%s option' % sys.argv[0])
-        print(u'option: init | run')
-        exit(1)
+        help_doc()
     if sys.argv[1] == 'init':
         sp = SwaggerParser()
         for _doc in sp.api_doc_list:
@@ -24,3 +33,5 @@ if __name__ == '__main__':
             '--html=%s' % _html_report,
             '--capture=no'
         ])
+    else:
+        help_doc()
