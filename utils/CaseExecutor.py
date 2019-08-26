@@ -61,8 +61,7 @@ class CaseExecutor(object):
                         items[key] = self.test_env.get(value[1:-1])
                         logging.info(u'%s 是一个变量, 替换成 %s' % (key, items[key]))
                     elif value.startswith('${') and value.endswith('}'):
-                        # module = __import__('test_env.scripts.%s' % value[2:-1])
-                        module = __import__('test_env.scripts.dcsSDK', fromlist=True)
+                        module = __import__('test_env.scripts.%s' % value[2:-1], fromlist=True)
                         items[key] = module.run(self.test_env)
                         logging.info(u'%s 是一个函数, 替换成 %s' % (key, items[key]))
         return items
