@@ -8,7 +8,8 @@ import sys
 import subprocess
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
+
 
 def help_doc():
     _help_doc = '\n'.join([
