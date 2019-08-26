@@ -3,19 +3,15 @@
 import yaml
 import os
 import logging
-from urllib.parse import urlparse, urljoin
-from collections import OrderedDict
-import json
-
-logging.basicConfig(level=logging.INFO)
 
 
 class SwaggerParser(object):
     def __init__(self):
-        self.api_doc_dir = os.path.join('api_docs')
+        self.api_doc_dir = os.path.join('openapi_docs')
         self.test_data_template_dir = os.path.join('data_template')
         self.test_case_dir = os.path.join('test_case')
         self.api_doc_list = os.listdir(self.api_doc_dir)
+        self.api_doc_list.remove('README.md')
 
     def parse_doc(self, doc_file_name: str):
         logging.info(u'获取接口文档名作为 suite name')
@@ -30,9 +26,8 @@ class SwaggerParser(object):
             _doc_content = yaml.full_load(f.read())
         logging.info(u'获取文档中 servers 下的 url 作为基础路径')
         _base_url = _doc_content['servers'][0]['url']
-        # 如果环境变量中有自定义的URL，则进行替换
-        if os.getenv('TEST_SERVER_URL'):
-            _base_url = urljoin(os.getenv('TEST_SERVER_URL'), urlparse(_base_url).path)
+        # if os.getenv('TEST_SERVER_URL'):
+        #     _base_url = urljoin(os.getenv('TEST_SERVER_URL'), urlparse(_base_url).path)
         logging.info('Base URL: %s' % _base_url)
         logging.info(u'解析文档中的 paths')
         for _path_url, _methods in _doc_content['paths'].items():
@@ -60,26 +55,16 @@ class SwaggerParser(object):
                 _response_content_detail = _detail['responses'].get(_status_code)
                 if _response_content_detail is None:
                     _response_content_detail = _detail['responses'].get(str(_status_code))
-                _response_content_detail = _response_content_detail['content']['application/json']['schema']
+                try:
+                    _response_content_detail = _response_content_detail['content']['application/json']['schema']
+                except KeyError:
+                    _response_content_detail = _response_content_detail['content']
                 if _response_content_detail.get('type') == 'array':
                     _response_content = dict()
                     for _key, _value in _response_content_detail['items']['properties'].items():
                         _response_content[_key] = _value.get('type') + ' # %s' % _value.get('description')
                 else:
                     _response_content = dict()
-                _api = [
-                    {'summary': _detail.get('summary')},
-                    {'method': _method.lower()},
-                    {'url': _base_url + _path_url.lower()},
-                    {'template': [
-                        {'path': _parameters['path']},
-                        {'header': _parameters['header']},
-                        {'query': _parameters['query']},
-                        {'body': _parameters['body']},
-                        {'expectedStatusCode': _status_code},
-                        {'expectedResponse': _response_content},
-                    ]},
-                ]
                 _api = {
                     'summary': _detail.get('summary'),
                     'method': _method.lower(),
@@ -135,9 +120,7 @@ class SwaggerParser(object):
                 '#!/usr/local/env python3',
                 '# -*- coding: utf-8 -*-',
                 '',
-                # 'from utils.SwaggerParser import SwaggerParser',
                 'from utils.CaseExecutor import CaseExecutor',
-                # 'import logging',
                 '',
                 '',
                 'class Test%s(object):' % _suite.capitalize(),
