@@ -126,7 +126,7 @@ class CaseExecutor(object):
             'expectedStatusCode': _expected_status_code,
             'expectedResponse': _expected_response,
         }
-        logging.info(_parameters)
+        logging.info(u'请求信息:\n%s' % yaml.safe_dump(_parameters, sort_keys=False))
         return _parameters
 
     @staticmethod
