@@ -8,8 +8,8 @@ import logging
 class SwaggerParser(object):
     def __init__(self):
         self.api_doc_dir = os.path.join('openapi_docs')
-        self.test_data_template_dir = os.path.join('data_template')
-        self.test_case_dir = os.path.join('test_case')
+        self.test_data_template_dir = os.path.join('tests', 'data_template')
+        self.test_case_dir = os.path.join('tests', 'test_case')
         self.api_doc_list = os.listdir(self.api_doc_dir)
         self.api_doc_list.remove('README.md')
 
@@ -105,13 +105,12 @@ class SwaggerParser(object):
                 _test_case_content = '\n'.join([
                     _test_case_content,
                     '    def test_%s(self):' % _test_data_file_name.split('.yaml')[0],
-                    '        ce = CaseExecutor()',
-                    '        ce.get_test_case_requests(',
+                    '        self.ce.get_test_case_requests(',
                     '            test_suite=\'%s\',' % _suite,
                     '            test_case=\'%s\'' % _test_data_file_name,
                     '        )',
-                    '        for test_request_data in ce.test_requests_data:',
-                    '            ce.exec_test_case(test_request_data)',
+                    '        for test_request_data in self.ce.test_requests_data:',
+                    '            self.ce.exec_test_case(test_request_data)',
                     '',
                 ])
             _test_case_suite = os.path.join(self.test_case_dir, 'test_' + _suite + '.py')
@@ -124,6 +123,10 @@ class SwaggerParser(object):
                 '',
                 '',
                 'class Test%s(object):' % _suite.capitalize(),
+                '',
+                '    def setup(self):',
+                '        self.ce = CaseExecutor()',
+                '        self.ce.setup()',
                 _test_case_content
             ])
             with open(_test_case_suite, 'w', encoding='utf-8') as f:

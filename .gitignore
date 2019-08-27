@@ -1,0 +1,9 @@
+.idea/
+.pytest_cache/
+test_case/
+test_data/
+data_template/
+test_env/
+__pycache__
+output/
+atf/

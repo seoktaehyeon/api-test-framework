@@ -7,15 +7,20 @@ import yaml
 import logging
 import pytest
 from urllib.parse import urlparse, urljoin
-from test_env import variables
+from tests.test_env import variables
 import json
 
 
 class CaseExecutor(object):
     def __init__(self):
-        self.test_data_dir = os.path.join('test_data')
+        self.test_data_dir = os.path.join('tests', 'test_data')
         self.test_requests_data = list()
         self.test_env = variables.get_global()
+
+    def setup(self):
+        logging.info(u'Setup for Testing')
+        module = __import__('tests.test_env.scripts.dcsSDK', fromlist=True)
+        module.run(self.test_env)
 
     def get_test_case_requests(self, test_suite: str, test_case: str):
         logging.info(u'测试 %s 中的 %s' % (test_suite, test_case))
@@ -61,7 +66,7 @@ class CaseExecutor(object):
                         items[key] = self.test_env.get(value[1:-1])
                         logging.info(u'%s 是一个变量, 替换成 %s' % (key, items[key]))
                     elif value.startswith('${') and value.endswith('}'):
-                        module = __import__('test_env.scripts.%s' % value[2:-1], fromlist=True)
+                        module = __import__('tests.test_env.scripts.%s' % value[2:-1], fromlist=True)
                         items[key] = module.run(self.test_env)
                         logging.info(u'%s 是一个函数, 替换成 %s' % (key, items[key]))
         return items
@@ -74,7 +79,7 @@ class CaseExecutor(object):
         for _key, _value in _path.items():
             _url = _url.replace('{%s}' % _key, _value)
         # Headers
-        _headers = test_request_data['header']
+        _headers = test_request_data['header'] if test_request_data['header'] is not None else {}
         _headers['Accept'] = 'application/json'
         _headers['Content-Type'] = 'application/json'
         _headers = self._replace_value(_headers)

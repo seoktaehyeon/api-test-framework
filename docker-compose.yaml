@@ -1,12 +1,16 @@
 version: '3'
 services:
   api-test-framework:
-    image: bxwill/api-test-framework:latest
+    image: bxwill/api-test-framework:stable
     container_name: api-test-framework
     restart: always
     volumes:
-      - ./atf/test_case:/workspace/test_case
-      - ./atf/test_data:/workspace/test_data
-      - ./atf/data_template:/workspace/data_template
+      - ./atf/openapi_docs:/workspace/openapi_docs
+      - ./atf/test_case:/workspace/tests/test_case
+      - ./atf/test_data:/workspace/tests/test_data
+      - ./atf/data_template:/workspace/tests/data_template
+      - ./atf/test_env:/workspace/tests/test_env
     environment:
-      TEST_SERVER_URL: http://api-test-framework
+      TEST_SERVER_URL: <http://api-test-framework>
+      TEST_ACCOUNT: <tester>
+      TEST_PASSWORD: <password>

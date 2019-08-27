@@ -39,11 +39,16 @@ if __name__ == '__main__':
             '--capture=no'
         ])
     elif sys.argv[1] == 'clean':
-        subprocess.getoutput('rm -rf test_case')
-        os.mkdir('test_case')
-        subprocess.getoutput('rm -rf test_data')
-        os.mkdir('test_data')
-        subprocess.getoutput('rm -rf data_template')
-        os.mkdir('data_template')
+        rm_dir_list = [
+            os.path.join('tests', 'test_case'),
+            os.path.join('tests', 'test_data'),
+            os.path.join('tests', 'data_template')
+        ]
+        for _dir in rm_dir_list:
+            logging.info('Cleanup ext dir: %s' % _dir)
+            subprocess.getoutput('rm -rf %s' % _dir)
+            os.mkdir(_dir)
+        logging.info('Cleanup ext dir: tests/test_env')
+        subprocess.getoutput('cd tests && rm -rf test_env && cp -R test_env_template test_env')
     else:
         help_doc()
