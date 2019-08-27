@@ -17,10 +17,30 @@ class CaseExecutor(object):
         self.test_requests_data = list()
         self.test_env = variables.get_global()
 
-    def setup(self):
-        logging.info(u'Setup for Testing')
+    def show_env(self):
+        _envs = list()
+        _max_len = len(max(self.test_env.keys(), key=len))
+        for _key, _value in self.test_env.items():
+            _blank = ' ' * (_max_len - len(_key))
+            _envs.append('  %s%s: %s' % (_key, _blank, _value))
+        return '\n'.join(_envs)
+
+    def setup_class(self):
+        logging.info('Setup Class for Testing')
         module = __import__('tests.test_env.scripts.dcsSDK', fromlist=True)
         module.run(self.test_env)
+
+    def teardown_class(self):
+        logging.info('Teardown Class for Testing')
+        pass
+
+    def setup_method(self):
+        logging.info('Setup Method for Testing')
+        logging.info('ENV:\n%s' % self.show_env())
+
+    def teardown_method(self):
+        logging.info('Teardown Method for Testing')
+        pass
 
     def get_test_case_requests(self, test_suite: str, test_case: str):
         logging.info(u'测试 %s 中的 %s' % (test_suite, test_case))
@@ -190,10 +210,10 @@ class CaseExecutor(object):
                 params=_data['query'],
                 headers=_data['header'],
                 json=_data['body'],
-                timeout=10
+                timeout=6
             )
-            logging.info(_response.status_code)
-            logging.info(_response.text)
+            logging.info('Status Code: %s' % _response.status_code)
+            logging.info('Response Content:\n%s' % _response.text)
             self._check_status_code(
                 expected=_data['expectedStatusCode'],
                 actual=_response
@@ -206,3 +226,7 @@ class CaseExecutor(object):
             raise TimeoutError(u'请求超时')
         finally:
             _session.close()
+
+
+if __name__ == '__main__':
+    print('This is a class for Case Execution')

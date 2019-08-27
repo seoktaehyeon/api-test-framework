@@ -124,9 +124,18 @@ class SwaggerParser(object):
                 '',
                 'class Test%s(object):' % _suite.capitalize(),
                 '',
-                '    def setup(self):',
+                '    def setup_class(self):',
                 '        self.ce = CaseExecutor()',
-                '        self.ce.setup()',
+                '        self.ce.setup_class()',
+                '',
+                '    def teardown_class(self):',
+                '        self.ce.teardown_class()',
+                '',
+                '    def setup_method(self):',
+                '        self.ce.setup_method()',
+                '',
+                '    def teardown_method(self):',
+                '        self.ce.teardown_method()',
                 _test_case_content
             ])
             with open(_test_case_suite, 'w', encoding='utf-8') as f:
