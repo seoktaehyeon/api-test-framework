@@ -1,4 +1,4 @@
-PyYAML==5.1
-requests==2.22.0
-pytest==3.7.3
-pytest-html==1.22.0
+PyYAML>=5.1
+requests>=2.22.0
+pytest>=3.7.3
+pytest-html>=1.22.0

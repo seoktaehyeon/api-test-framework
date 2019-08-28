@@ -1,4 +1,6 @@
 # Mini API Test Framework
+> It is not smart, just a hard worker.
+ 
 ```text
 .
 ├── Dockerfile

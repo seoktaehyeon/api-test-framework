@@ -34,9 +34,13 @@ if __name__ == '__main__':
         _html_report = os.path.join('output', 'report.html')
         pytest.main([
             '-v',
+            '-r chars',
             '--color=yes',
             '--html=%s' % _html_report,
-            '--capture=no'
+            '--capture=no',
+            # '--setup-show',
+            # '--show-capture=all',
+            '%s' % sys.argv[2]
         ])
     elif sys.argv[1] == 'clean':
         rm_dir_list = [
