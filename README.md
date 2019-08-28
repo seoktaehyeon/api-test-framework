@@ -44,13 +44,16 @@ option:
 
 #### Option I: git 
 ```bash
-# Download code
-git clone 
-# Put swagger YAML into openapi_docs
-wget http://xxxx/xxx.yaml -O openapi_docs/xxx.yaml or mv xxx.yaml openapi_docs/xxx.yaml
-# After init, you will find data_template/test_case in your test bed
+# 1. Prepare
+git clone https://github.com/seoktaehyeon/api-test-framework.git
+cd api-test-framework
+pip install -r requirements.txt
+# 2. Put swagger YAML into openapi_docs
+wget http://xxxx/xxx.yaml -O openapi_docs/xxx.yaml 
+# 3. Init
 ./api-tester.py init
-# Copy data_template into test_data and modify them ready to test
+# 4. After init you will find data_template/test_case in your test bed
+# 5. Copy tests/data_template into tests/test_data and modify them ready to test
 ./api-tester.py run
 ```
 #### Option II: docker
