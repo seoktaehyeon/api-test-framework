@@ -40,16 +40,17 @@ class SwaggerParser(object):
                     'body': dict(),
                 }
                 logging.info(u'解析文档中接口的 parameters')
-                for _parameter in _detail['parameters']:
-                    logging.debug(u'parameter 可能存在于 path, header, query, body')
-                    _parameters[_parameter['in']][_parameter['name']] = ''.join([
-                        _parameter['schema']['type'],
-                        ' * ' if _parameter.get('required') else '',
-                        ' # ',
-                        _parameter.get('description') if _parameter.get('description') else '',
-                        ' default: %s' % _parameter.get('default') if _parameter.get('default') else '',
-                        ' maximum: %s' % _parameter.get('maximum') if _parameter.get('maximum') else '',
-                    ])
+                if _detail.get('parameters') is not None:
+                    for _parameter in _detail['parameters']:
+                        logging.debug(u'parameter 可能存在于 path, header, query, body')
+                        _parameters[_parameter['in']][_parameter['name']] = ''.join([
+                            _parameter['schema']['type'],
+                            ' * ' if _parameter.get('required') else '',
+                            ' # ',
+                            _parameter.get('description') if _parameter.get('description') else '',
+                            ' default: %s' % _parameter.get('default') if _parameter.get('default') else '',
+                            ' maximum: %s' % _parameter.get('maximum') if _parameter.get('maximum') else '',
+                        ])
                 logging.info(u'定义接口数据用例模板的内容')
                 _status_code = 200
                 _response_content_detail = _detail['responses'].get(_status_code)

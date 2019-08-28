@@ -51,6 +51,7 @@ pip install -r requirements.txt
 # 2. Put swagger YAML into openapi_docs
 wget http://xxxx/xxx.yaml -O openapi_docs/xxx.yaml 
 # 3. Init
+./api-tester.py clean
 ./api-tester.py init
 # 4. After init you will find data_template/test_case in your test bed
 # 5. Copy tests/data_template into tests/test_data and modify them ready to test
