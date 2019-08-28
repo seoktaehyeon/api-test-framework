@@ -82,6 +82,7 @@ services:
 ```
 ```bash
 # Except git clone, there only ./api-tester.py execution method is different with Option I
+docker exec -it api-test-framework ./api-tester.py clean 
 docker exec -it api-test-framework ./api-tester.py init
 docker exec -it api-test-framework ./api-tester.py run
 ```
