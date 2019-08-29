@@ -100,6 +100,8 @@ class SwaggerParser(object):
                 )
                 logging.info(u'把解析后的接口内容写入 YAML 格式的测试数据文件 %s' % _test_data_file_path)
                 with open(_test_data_file_path, 'w', encoding='utf-8') as f:
+                    if not _api.get('summary'):
+                        _api['summary'] = _test_data_file_name[:-5]
                     yaml.safe_dump(_api, f, allow_unicode=True, sort_keys=False)
 
                 logging.info(u'生成测试用例内容')

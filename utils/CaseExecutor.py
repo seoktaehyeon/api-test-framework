@@ -26,21 +26,27 @@ class CaseExecutor(object):
         return '\n'.join(_envs)
 
     def setup_class(self):
-        logging.info('Setup Class for Testing')
-        module = __import__('tests.test_env.scripts.dcsSDK', fromlist=True)
-        module.run(self.test_env)
+        logging.info('Setup Suite for Testing')
+        try:
+            module = __import__('tests.test_env.scripts.setupSuite', fromlist=True)
+            module.run(self.test_env)
+        except ModuleNotFoundError:
+            logging.info('No operation during setup suite')
 
     def teardown_class(self):
-        logging.info('Teardown Class for Testing')
-        pass
+        logging.info('Teardown Suite for Testing')
 
     def setup_method(self):
-        logging.info('Setup Method for Testing')
+        logging.info('Setup Case for Testing')
+        try:
+            module = __import__('tests.test_env.scripts.setupCase', fromlist=True)
+            module.run(self.test_env)
+        except ModuleNotFoundError:
+            logging.info('No operation during setup case')
         logging.info('ENV:\n%s' % self.show_env())
 
     def teardown_method(self):
-        logging.info('Teardown Method for Testing')
-        pass
+        logging.info('Teardown Case for Testing')
 
     def get_test_case_requests(self, test_suite: str, test_case: str):
         logging.info(u'测试 %s 中的 %s' % (test_suite, test_case))
@@ -84,11 +90,11 @@ class CaseExecutor(object):
                 if isinstance(value, str):
                     if value.startswith('{') and value.endswith('}'):
                         items[key] = self.test_env.get(value[1:-1])
-                        logging.info(u'%s 是一个变量, 替换成 %s' % (key, items[key]))
+                        logging.info(u'%s 是变量%s, 替换成 %s' % (key, value, items[key]))
                     elif value.startswith('${') and value.endswith('}'):
                         module = __import__('tests.test_env.scripts.%s' % value[2:-1], fromlist=True)
                         items[key] = module.run(self.test_env)
-                        logging.info(u'%s 是一个函数, 替换成 %s' % (key, items[key]))
+                        logging.info(u'%s 是函数%s, 替换成 %s' % (key, value, items[key]))
         return items
 
     def _generate_parameters(self, test_request_data):
@@ -173,7 +179,14 @@ class CaseExecutor(object):
     @staticmethod
     def _check_status_code(expected, actual):
         logging.info(u'检查状态码 [预期]%s [实际]%s' % (expected, actual.status_code))
-        assert expected == actual.status_code, u'状态码不符合预期'
+        if actual.status_code == 500:
+            logging.error(u'状态码 500 Error')
+            raise AssertionError(u'状态码不符合预期')
+        elif actual.status_code != expected:
+            logging.error(u'状态码不符合预期')
+            raise AssertionError(u'状态码不符合预期')
+        # assert actual.status_code != 500, u'状态码 500 Error'
+        # assert expected == actual.status_code, u'状态码不符合预期'
         return True
 
     def _check_response(self, expected, actual):

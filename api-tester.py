@@ -31,6 +31,11 @@ if __name__ == '__main__':
         for _doc in sp.api_doc_list:
             sp.parse_doc(doc_file_name=_doc)
     elif sys.argv[1] == 'run':
+        sys.path.append(os.path.join('.', 'tests', 'scripts'))
+        try:
+            _args = sys.argv[2]
+        except IndexError:
+            _args = ''
         _html_report = os.path.join('output', 'report.html')
         pytest.main([
             '-v',
@@ -40,7 +45,7 @@ if __name__ == '__main__':
             '--capture=no',
             # '--setup-show',
             # '--show-capture=all',
-            '%s' % sys.argv[2]
+            _args
         ])
     elif sys.argv[1] == 'clean':
         rm_dir_list = [
