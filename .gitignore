@@ -8,3 +8,8 @@ __pycache__
 output/
 atf/
 openapi_docs/*.yaml
+*.pyc
+*.egg-info/
+debug/
+build/
+dist/
