@@ -10,6 +10,12 @@ setup(
     name='ApiTestFramework',
     version='0.1',
     packages=find_packages(),
+    install_requires=[
+        'PyYAML',
+        'requests',
+        'pytest',
+        'pytest-html'
+    ]
 )
 
 local_path = os.path.join('.', 'atf-exec')

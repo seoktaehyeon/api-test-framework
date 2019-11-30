@@ -54,7 +54,7 @@ class CodeGenerator(object):
             '# -*- coding: utf-8 -*-',
             '',
             '',
-            'def run(test_env):',
+            'def run(test_env: dict):',
             '    # This is a %s script' % script_name,
             '    pass',
             ''

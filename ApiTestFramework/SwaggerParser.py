@@ -10,10 +10,12 @@ from ApiTestFramework.CodeGenerator import CodeGenerator
 class SwaggerParser(object):
     def __init__(self):
         with open(os.path.join('atf_config', 'config.yaml'), 'r') as f:
+            self.config = yaml.full_load(f.read())
+        with open(os.path.join(self.config['ATF_TEST_VARIABLES_PATH'], 'variables.yaml'), 'r') as f:
             self.variables = yaml.full_load(f.read())
-        self.api_doc_dir = self.variables['ATF_API_DOC_PATH']
-        self.test_data_template_dir = self.variables['ATF_TEST_DATA_TEMPLATE_PATH']
-        self.test_case_dir = self.variables['ATF_TEST_CASE_PATH']
+        self.api_doc_dir = self.config['ATF_API_DOC_PATH']
+        self.test_data_template_dir = self.config['ATF_TEST_DATA_TEMPLATE_PATH']
+        self.test_case_dir = self.config['ATF_TEST_CASE_PATH']
         self.api_doc_list = os.listdir(self.api_doc_dir)
 
     def parse_doc(self, doc_file_name: str):
@@ -28,12 +30,13 @@ class SwaggerParser(object):
         with open(_doc_file_path, 'r') as f:
             _doc_content = yaml.full_load(f.read())
         logging.info(u'获取文档中 servers 下的 url 作为基础路径')
-        try:
-            _base_url = _doc_content['servers'][0]['url']
-        except KeyError:
-            _base_url = ''
-        # if os.getenv('TEST_SERVER_URL'):
-        #     _base_url = urljoin(os.getenv('TEST_SERVER_URL'), urlparse(_base_url).path)
+        if self.variables.get('ACCESS_URL'):
+            _base_url = self.variables.get('ACCESS_URL')
+        else:
+            try:
+                _base_url = _doc_content['servers'][0]['url']
+            except KeyError:
+                _base_url = ''
         logging.info('Base URL: %s' % _base_url)
         logging.info(u'解析文档中的 paths')
         for _path_url, _methods in _doc_content['paths'].items():
