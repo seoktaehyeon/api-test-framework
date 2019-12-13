@@ -24,13 +24,13 @@ cd api-test-framework
 ```
 
 ## Usage
-```bash
+```text
 Usage: atf-exec <command>
 command:
     init    Init test case and generate data template in data_template dir
     prepare Init test case and generate data template in data_template dir
     run     Run test case
-    clean   Clean up workspace
+    clean   Cleanup workspace
 ```
 
 ## Quick Start

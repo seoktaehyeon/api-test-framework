@@ -4,4 +4,3 @@ COPY . /tmp
 RUN cd /tmp && \
     python setup.py install
 WORKDIR /workspace
-CMD top
