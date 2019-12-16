@@ -17,7 +17,8 @@ def help_doc():
     _help_doc = '\n'.join([
         'Usage: %s option' % sys.argv[0],
         'option:',
-        '    init    Init test case and generate data template in data_template dir',
+        '    init    Init framework',
+        '    prepare Generate test case in test_case dir and data template in data_template dir',
         '    run     Run test case',
         '    clean   Clean up workspace'
     ])

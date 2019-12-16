@@ -68,7 +68,9 @@ class SwaggerParser(object):
                 try:
                     _response_content_detail = _response_content_detail['content']['application/json']['schema']
                 except KeyError:
-                    _response_content_detail = _response_content_detail['content']
+                    _response_content_detail = _response_content_detail.get('content')
+                except TypeError:
+                    _response_content_detail = dict()
                 if _response_content_detail.get('type') == 'array':
                     _response_content = dict()
                     for _key, _value in _response_content_detail['items']['properties'].items():
