@@ -4,6 +4,7 @@ import yaml
 import os
 import logging
 from datetime import datetime
+from urllib.parse import urlparse, urljoin
 from ApiTestFramework.CodeGenerator import CodeGenerator
 
 
@@ -30,14 +31,27 @@ class SwaggerParser(object):
         with open(_doc_file_path, 'r') as f:
             _doc_content = yaml.full_load(f.read())
         logging.info(u'获取文档中 servers 下的 url 作为基础路径')
+        _base_url = {
+            'scheme': '',
+            'netloc': '',
+            'path': '',
+        }
+        try:
+            _base_url_obj = urlparse(_doc_content['servers'][0]['url'])
+            _base_url['scheme'] = _base_url_obj.scheme
+            _base_url['netloc'] = _base_url_obj.netloc
+            _base_url['path'] = _base_url_obj.path
+        except KeyError:
+            _base_url_obj = ''
         if self.variables.get('ACCESS_URL'):
-            _base_url = self.variables.get('ACCESS_URL')
-        else:
-            try:
-                _base_url = _doc_content['servers'][0]['url']
-            except KeyError:
-                _base_url = ''
-        logging.info('Base URL: %s' % _base_url)
+            _base_url_obj = urlparse(self.variables.get('ACCESS_URL'))
+            _base_url['scheme'] = _base_url_obj.scheme
+            _base_url['netloc'] = _base_url_obj.netloc
+        _base_url_str = urljoin(
+            base=_base_url.get('scheme') + '://' + _base_url.get('netloc'),
+            url=_base_url.get('path')
+        )
+        logging.info('Base URL: %s' % _base_url_str)
         logging.info(u'解析文档中的 paths')
         for _path_url, _methods in _doc_content['paths'].items():
             logging.info(u'获取接口 %s 的 method 和具体内容' % _path_url)
@@ -80,7 +94,7 @@ class SwaggerParser(object):
                 _api = {
                     'summary': _detail.get('summary'),
                     'method': _method.lower(),
-                    'url': _base_url + _path_url.lower(),
+                    'url': _base_url_str + _path_url.lower(),
                     'template': {
                         'path': _parameters['path'],
                         'header': _parameters['header'],
@@ -116,7 +130,7 @@ class SwaggerParser(object):
                     yaml.safe_dump(_api, f, allow_unicode=True, sort_keys=False)
 
                 logging.info(u'生成测试用例内容')
-                _test_case_title = '%s %s' % (_method.upper(), _base_url + _path_url.lower())
+                _test_case_title = '%s %s' % (_method.upper(), _base_url_str + _path_url.lower())
                 _test_case_content = CodeGenerator.append_test_case(
                     case_content=_test_case_content,
                     test_function=_test_data_file_name.split('.yaml')[0],
