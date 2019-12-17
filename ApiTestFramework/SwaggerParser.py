@@ -56,13 +56,15 @@ class SwaggerParser(object):
         for _path_url, _methods in _doc_content['paths'].items():
             logging.info(u'获取接口 %s 的 method 和具体内容' % _path_url)
             for _method, _detail in _methods.items():
+                if _method.lower() not in ['get', 'post', 'put', 'delete', 'patch', 'head']:
+                    continue
                 _parameters = {
                     'path': dict(),
                     'header': dict(),
                     'query': dict(),
                     'body': dict(),
                 }
-                logging.info(u'解析文档中接口的 parameters')
+                logging.info(u'解析文档中 %s %s 接口的 parameters' % (_method, _path_url))
                 if _detail.get('parameters') is not None:
                     for _parameter in _detail['parameters']:
                         logging.debug(u'parameter 可能存在于 path, header, query, body')
