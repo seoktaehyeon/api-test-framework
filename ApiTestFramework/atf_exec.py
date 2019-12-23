@@ -133,7 +133,7 @@ def load_atf_config():
         logging.info('No ATF config can be found')
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 1:
         help_doc()
     if sys.argv[1] == 'init':

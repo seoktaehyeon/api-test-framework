@@ -4,13 +4,13 @@
 ```text
 .
 ├── ApiTestFramework
+│   ├── __init__.py
 │   ├── CaseExecutor.py
 │   ├── CodeGenerator.py
 │   ├── SwaggerParser.py
-│   └── __init__.py
+│   └── atf_exec.py
 ├── Dockerfile
 ├── README.md
-├── atf-exec
 ├── docker-compose.yaml
 ├── requirements.txt
 └── setup.py
@@ -18,9 +18,7 @@
 
 ## Installation
 ```bash
-git clone https://github.com/seoktaehyeon/api-test-framework.git
-cd api-test-framework
-./setup.py install
+pip install ApiTestFramework
 ```
 
 ## Usage
@@ -36,9 +34,7 @@ command:
 ## Quick Start
 ```bash
 # 1. Install ATF
-git clone https://github.com/seoktaehyeon/api-test-framework.git
-cd api-test-framework
-./setup.py install
+pip install ApiTestFramework
 # 2. Init ATF
 mkdir api_test
 cd api_test
