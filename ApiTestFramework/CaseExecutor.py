@@ -7,45 +7,64 @@ import yaml
 import logging
 import pytest
 from urllib.parse import urlparse, urljoin
-from tests.test_env import variables
 import json
 
 
 class CaseExecutor(object):
     def __init__(self):
-        self.test_data_dir = os.path.join('tests', 'test_data')
+        with open(os.path.join('atf_config', 'config.yaml'), 'r') as f:
+            self.config = yaml.full_load(f.read())
+        with open(os.path.join(self.config['ATF_TEST_VARIABLES_PATH'], 'variables.yaml'), 'r') as f:
+            self.variables = yaml.full_load(f.read())
         self.test_requests_data = list()
-        self.test_env = variables.get_global()
 
     def show_env(self):
         _envs = list()
-        _max_len = len(max(self.test_env.keys(), key=len))
-        for _key, _value in self.test_env.items():
+        _max_len = len(max(self.variables.keys(), key=len))
+        for _key, _value in self.variables.items():
             _blank = ' ' * (_max_len - len(_key))
             _envs.append('  %s%s: %s' % (_key, _blank, _value))
         return '\n'.join(_envs)
 
     def setup_class(self):
-        logging.info('Setup Class for Testing')
-        module = __import__('tests.test_env.scripts.dcsSDK', fromlist=True)
-        module.run(self.test_env)
+        logging.info('Setup Suite for Testing')
+        try:
+            module = __import__('%s.scripts.setupSuite' % self.config['ATF_TEST_PATH'], fromlist=True)
+            module.run(self.variables)
+        except ModuleNotFoundError:
+            logging.info('No operation during setup suite')
 
     def teardown_class(self):
-        logging.info('Teardown Class for Testing')
-        pass
+        logging.info('Teardown Suite for Testing')
+        try:
+            module = __import__('%s.scripts.teardownSuite' % self.config['ATF_TEST_PATH'], fromlist=True)
+            module.run(self.variables)
+        except ModuleNotFoundError:
+            logging.info('No operation during teardown suite')
 
     def setup_method(self):
-        logging.info('Setup Method for Testing')
+        logging.info('Setup Case for Testing')
+        try:
+            module = __import__('%s.scripts.setupCase' % self.config['ATF_TEST_PATH'], fromlist=True)
+            module.run(self.variables)
+        except ModuleNotFoundError:
+            logging.info('No operation during setup case')
         logging.info('ENV:\n%s' % self.show_env())
 
     def teardown_method(self):
-        logging.info('Teardown Method for Testing')
-        pass
+        logging.info('Teardown Case for Testing')
+        try:
+            module = __import__('%s.scripts.teardownCase' % self.config['ATF_TEST_PATH'], fromlist=True)
+            module.run(self.variables)
+        except ModuleNotFoundError:
+            logging.info('No operation during teardown case')
 
-    def get_test_case_requests(self, test_suite: str, test_case: str):
+    def get_test_case_requests(self, test_suite: str, test_case: str, test_case_title: str):
+        logging.info(u'测试接口: %s' % test_case_title)
+
         logging.info(u'测试 %s 中的 %s' % (test_suite, test_case))
         _requests_data = list()
-        _file_path = os.path.join(self.test_data_dir, test_suite, test_case)
+        _file_path = os.path.join(self.config['ATF_TEST_DATA_PATH'], test_suite, test_case)
         if os.path.exists(_file_path) is False:
             pytest.skip(u'缺少测试数据文件')
 
@@ -54,7 +73,7 @@ class CaseExecutor(object):
             _content = yaml.full_load(f.read())
         logging.debug(_content)
         _origin_url = urlparse(_content.get('url'))
-        _test_url = urlparse(self.test_env.get('access_url'))
+        _test_url = urlparse(self.variables.get('ACCESS_URL'))
         _url = urljoin(
             base=_test_url.scheme + '://' + _test_url.netloc,
             url=_origin_url.path
@@ -83,12 +102,15 @@ class CaseExecutor(object):
             for key, value in items.items():
                 if isinstance(value, str):
                     if value.startswith('{') and value.endswith('}'):
-                        items[key] = self.test_env.get(value[1:-1])
-                        logging.info(u'%s 是一个变量, 替换成 %s' % (key, items[key]))
+                        items[key] = self.variables.get(value[1:-1])
+                        logging.info(u'%s 是变量%s, 替换成 %s' % (key, value, items[key]))
                     elif value.startswith('${') and value.endswith('}'):
-                        module = __import__('tests.test_env.scripts.%s' % value[2:-1], fromlist=True)
-                        items[key] = module.run(self.test_env)
-                        logging.info(u'%s 是一个函数, 替换成 %s' % (key, items[key]))
+                        module = __import__(
+                            '%s.scripts.%s' % (self.config['ATF_TEST_PATH'], value[2:-1]),
+                            fromlist=True
+                        )
+                        items[key] = module.run(self.variables)
+                        logging.info(u'%s 是函数%s, 替换成 %s' % (key, value, items[key]))
         return items
 
     def _generate_parameters(self, test_request_data):
@@ -126,7 +148,7 @@ class CaseExecutor(object):
             'expectedStatusCode': _expected_status_code,
             'expectedResponse': _expected_response,
         }
-        logging.info(u'请求信息:\n%s' % yaml.safe_dump(_parameters, sort_keys=False))
+        logging.info(_parameters)
         return _parameters
 
     @staticmethod
@@ -173,7 +195,14 @@ class CaseExecutor(object):
     @staticmethod
     def _check_status_code(expected, actual):
         logging.info(u'检查状态码 [预期]%s [实际]%s' % (expected, actual.status_code))
-        assert expected == actual.status_code, u'状态码不符合预期'
+        if actual.status_code == 500:
+            logging.error(u'状态码 500 Error')
+            raise AssertionError(u'状态码不符合预期')
+        elif actual.status_code != expected:
+            logging.error(u'状态码不符合预期')
+            raise AssertionError(u'状态码不符合预期')
+        # assert actual.status_code != 500, u'状态码 500 Error'
+        # assert expected == actual.status_code, u'状态码不符合预期'
         return True
 
     def _check_response(self, expected, actual):

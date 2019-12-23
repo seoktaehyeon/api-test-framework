@@ -1,7 +1,4 @@
 FROM python:3.7-alpine3.10
 MAINTAINER Will v.stone@163.com
+RUN pip install ApiTestFramework
 WORKDIR /workspace
-COPY . .
-RUN pip install -r requirements.txt && \
-    chmod +x api-tester.py
-CMD top

@@ -1,82 +1,49 @@
 # Mini API Test Framework
+> It is not smart, just a hard worker.
+ 
 ```text
 .
+├── ApiTestFramework
+│   ├── __init__.py
+│   ├── CaseExecutor.py
+│   ├── CodeGenerator.py
+│   ├── SwaggerParser.py
+│   └── atf_exec.py
 ├── Dockerfile
 ├── README.md
-├── api-tester.py
 ├── docker-compose.yaml
-├── openapi_docs
-│   └── README.md
 ├── requirements.txt
-├── tests
-│   ├── __init__.py
-│   ├── data_template
-│   ├── test_case
-│   ├── test_data
-│   ├── test_env
-│   │   ├── __init__.py
-│   │   ├── scripts
-│   │   │   └── __init__.py
-│   │   └── variables.py
-│   └── test_env_template
-│       ├── __init__.py
-│       ├── scripts
-│       │   └── __init__.py
-│       └── variables.py
-└── utils
-    ├── CaseExecutor.py
-    ├── SwaggerParser.py
-    └── __init__.py
+└── setup.py
+```
+
+## Installation
+```bash
+pip install ApiTestFramework
 ```
 
 ## Usage
-```bash
-Usage: ./api-tester.py option
-option:
-    init    Init test case and generate data template in data_template dir
+```text
+Usage: atf-exec <command>
+command:
+    init    Init framework
+    prepare Generate test case in test_case dir and data template in data_template dir
     run     Run test case
-    clean   Clean up workspace
+    clean   Cleanup workspace
 ```
 
-## How To Run In Test Bed
-
-#### Option I: git 
+## Quick Start
 ```bash
-# Download code
-git clone 
-# Put swagger YAML into openapi_docs
-wget http://xxxx/xxx.yaml -O openapi_docs/xxx.yaml or mv xxx.yaml openapi_docs/xxx.yaml
-# After init, you will find data_template/test_case in your test bed
-./api-tester.py init
-# Copy data_template into test_data and modify them ready to test
-./api-tester.py run
+# 1. Install ATF
+pip install ApiTestFramework
+# 2. Init ATF
+mkdir api_test
+cd api_test
+atf-exec init
+# 3. Put swagger YAML into atf_api_docs
+wget http://xxxx/xxx.yaml -O atf_api_docs/xxx.yaml 
+# 4. Prepare for running
+atf-exec prepare
+# 5. Add test data into atf_test/data refer to atf_test/data_template
+# 6. Execute testing
+atf-exec run
 ```
-#### Option II: docker
-```bash
-docker-compose -f compose.yaml up -d
-```
-compose.yaml content as bellow:
-```yaml
-version: '3'
-services:
-  api-test-framework:
-    image: bxwill/api-test-framework:stable
-    container_name: api-test-framework
-    restart: always
-    volumes:
-      - ./atf/openapi_docs:/workspace/openapi_docs
-      - ./atf/test_case:/workspace/tests/test_case
-      - ./atf/test_data:/workspace/tests/test_data
-      - ./atf/data_template:/workspace/tests/data_template
-      - ./atf/test_env:/workspace/tests/test_env
-    environment:
-      TEST_SERVER_URL: <http://api-test-framework>
-      TEST_ACCOUNT: <tester>
-      TEST_PASSWORD: <password>
-```
-```bash
-# Except git clone, there only ./api-tester.py execution method is different with Option I
-docker exec -it api-test-framework ./api-tester.py init
-docker exec -it api-test-framework ./api-tester.py run
-```
-
