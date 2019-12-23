@@ -5,9 +5,9 @@ from setuptools import find_packages, setup
 import os
 
 
-URL = 'https://github.com/seoktaehyeon/api-test-framework',
+URL = 'https://github.com/seoktaehyeon/api-test-framework'
 NAME = 'ApiTestFramework'
-VERSION = '0.1.1'
+VERSION = '0.1.2'
 DESCRIPTION = 'Api test framework in Linux'
 if os.path.exists('README.md'):
     with open('README.md', encoding='utf-8') as f:

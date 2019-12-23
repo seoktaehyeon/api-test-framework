@@ -8,14 +8,13 @@ import sys
 import subprocess
 import logging
 import yaml
-import shutil
 
 logging.basicConfig(level=logging.INFO)
 
 
 def help_doc():
     _help_doc = '\n'.join([
-        'Usage: %s option' % sys.argv[0],
+        'Usage: atf-exec option',
         'option:',
         '    init    Init framework',
         '    prepare Generate test case in test_case dir and data template in data_template dir',
